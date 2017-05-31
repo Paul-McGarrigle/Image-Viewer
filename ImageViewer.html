@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Image Viewer</title>
+</head>
+<body>
+	<!-- Declare HTML Elements -->
+	<div id="div"></div>
+	<p id = "p"></p>
+	<button id = "btn">Add More</button>
+</body>
+<!-- JavaScript file -->
+<footer>
+	<script>
+		// Declaring Variables, change imagesPerRow to specify the number of images per row/line
+		var imagesFolder = "img/img/", imagesExtension = ".jpg", percent = 0;
+		var imagesPerRow = 5, previous = null, next = null, flag = 0, imageCounter = 0, rowCounter = 0;
+
+		// Code to be executed as soon as page loads. Window OnLoad calls onClickFunction Function to list the 
+		// first row and then an Event Listener is added to the Button to listen for button clicks
+		window.onload = onClickFunction();
+		document.getElementById("btn").addEventListener("click", function(){ onClickFunction(imagesPerRow) });
+
+		// This Function is called with each button click
+		function onClickFunction()
+		{
+			imageCounter++; // Image Counter
+			rowCounter++; // Row Counter
+
+			// Adding a leading 0 to numbers less than 10 to match image names
+			if(imageCounter.toString().length < 2)
+			{
+				imageCounter = "0" + imageCounter;
+			}
+
+			// Creates an Image Element for each image in the folder & assigns a source and unique ID to each image and specifies how images will be displayed
+			var img = document.createElement("img");
+			img.src = imagesFolder + imageCounter + imagesExtension; 
+			img.id = imageCounter;
+			img.display = "inline-block";
+
+			// Calculates how much width each image will be assigned, therefore changing the number of images per row
+			// will not affect the display of the webpage, the 0.2 is to allow space for borders
+			percent = (100 / imagesPerRow) - 0.2;
+			img.style.width = percent + "%";
+
+			// Add Event Listeners for each image
+			img.addEventListener("load", function()
+			{ 
+				// If row counter is greater than imagesPerRow set row counter to 0 & return
+				if(rowCounter > imagesPerRow - 1)
+				{
+					rowCounter = 0;
+					return;
+				}
+
+				// Recursion, i.e. if image sucessfully loads the next Function Call will try to load the next image
+				onClickFunction();
+			});
+
+			img.addEventListener("click", function(){ selectImage(this) });
+			img.addEventListener("error", function(){ exit(this) });
+
+			// Adds each image as a Child Element of the div Parent Element
+			document.getElementById("div").appendChild(img);
+		}
+
+		// This Function is Called when an image is clicked
+		function selectImage(img)
+		{
+			// Adds a Border, Description & Cross to each image, and adds an Event Listener and size specifications to the cross
+			img.setAttribute("border", 3);
+			document.getElementById("p").innerHTML = "Image Description " + img.id + "<img src = 'img/img/cross.jpg' id = 'cross'>";
+			document.getElementById("cross").setAttribute("width", "20px");
+			document.getElementById("cross").setAttribute("heigth", "20px");
+			document.getElementById("cross").addEventListener("click", function(){ deleteImage(img) });
+
+			// Removes Border from previous image when a new image is clicked
+			if(previous != null)
+			{
+				document.getElementById(previous).setAttribute("border", "none");
+			}
+			previous = img.id;
+
+			if(flag == 1)
+			{
+				document.getElementById(previous).setAttribute("border", 3);
+			}
+		}
+
+		// This Function is Called when the cross image, beside the image description, is clicked
+		function deleteImage(image)
+		{
+			// Deals with Errors which can occur if previous image has been deleted
+			try
+			{
+				previous = image.previousSibling.id;
+				flag = 1;
+			} 
+			catch (err) 
+			{
+				previous = image.nextSibling.id;
+				flag = 1;
+			} 
+			
+			// Remove selected image and the description for the image
+			image.remove();
+			document.getElementById("p").innerHTML = "";
+		}
+
+		// This Function is Called when an Error occurs with an image
+		function exit(img)
+		{
+			// Removes broken images, hides the button and displays a message
+		    img.remove();
+		    document.getElementById("btn").style.visibility="hidden";
+			setTimeout(function(){ document.getElementById("p").innerHTML = "<i><b>No Images Left</b></i>" }, 100);
+		}
+	</script>
+</footer>
+</html>
